@@ -1,0 +1,5 @@
+detectron2/
+
+*.MOV
+*.mp4
+*.avi
