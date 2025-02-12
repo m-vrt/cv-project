@@ -20,13 +20,28 @@ if not cap.isOpened():
 cfg = get_cfg()
 cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.3  
-cfg.MODEL.DEVICE = "cpu" 
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.3 
+cfg.MODEL.DEVICE = "cpu"  
 
 predictor = DefaultPredictor(cfg)
 
 
-frame_count = 0
+fps = int(cap.get(cv2.CAP_PROP_FPS)) 
+frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+
+resize_width = frame_width // 2  
+resize_height = frame_height // 2
+
+frame_skip = 2  
+
+
+output_path = "output_video.avi"
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out = cv2.VideoWriter(output_path, fourcc, fps // frame_skip, (resize_width, resize_height))
+
+frame_count = 0  
 
 
 while cap.isOpened():
@@ -35,31 +50,36 @@ while cap.isOpened():
         break
 
     frame_count += 1
+    if frame_count % frame_skip != 0:
+        continue  
 
     
-    if frame_count % 3 != 0:
-        continue
+    frame = cv2.resize(frame, (resize_width, resize_height))
 
     
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-  
+   
     outputs = predictor(frame_rgb)
 
   
-    v = Visualizer(frame_rgb, MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
+    v = Visualizer(frame_rgb, scale=0.8) 
     v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
 
-  
+   
     processed_frame = cv2.cvtColor(v.get_image(), cv2.COLOR_RGB2BGR)
 
-    
+   
+    out.write(processed_frame)
+
+   
     cv2.imshow("Object Detection", processed_frame)
 
-    
+  
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 
 cap.release()
+out.release()
 cv2.destroyAllWindows()
