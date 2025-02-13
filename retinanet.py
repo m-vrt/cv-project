@@ -38,7 +38,7 @@ cfg.MODEL.DEVICE = "cuda"
 predictor = DefaultPredictor(cfg)
 
 
-output_path = "output_video.mp4"
+output_path = "output_retinanet.mp4"
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, max(1, fps // frame_skip), (resize_width, resize_height))
 
