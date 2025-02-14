@@ -36,13 +36,18 @@ def get_color(class_id):
     if class_id not in CLASS_COLORS:
         muted_palette = [
             (60, 180, 100),  
-            (90, 140, 200), 
-            (180, 80, 80),  
+            (90, 140, 200),  
+            (180, 80, 80),   
             (190, 160, 90),  
             (140, 140, 140)  
         ]
         CLASS_COLORS[class_id] = muted_palette[class_id % len(muted_palette)]
     return CLASS_COLORS[class_id]
+
+
+alpha_running = 1.0
+beta_running = 0.0
+alpha_smoothing = 0.05  
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -50,6 +55,16 @@ while cap.isOpened():
         break
 
     frame = cv2.resize(frame, (output_width, output_height))
+
+   
+    avg_brightness = np.mean(frame)
+    target_brightness = 88.22  
+
+    beta_new = target_brightness - avg_brightness
+    beta_running = (1 - alpha_smoothing) * beta_running + alpha_smoothing * beta_new
+
+   
+    frame = cv2.convertScaleAbs(frame, alpha=1.1, beta=beta_running)
 
     results = model(frame)[0]
 
@@ -65,9 +80,11 @@ while cap.isOpened():
             for c in range(3):
                 colored_mask[:, :, c] = (mask * color[c]).astype(np.uint8)
 
-            colored_mask = cv2.GaussianBlur(colored_mask, (5, 5), 3)
+         
+            colored_mask = cv2.GaussianBlur(colored_mask, (7, 7), 3)
 
-            frame = cv2.addWeighted(frame, 0.85, colored_mask, 0.15, 0)  
+          
+            frame = cv2.addWeighted(frame, 0.93, colored_mask, 0.07, 0)  
 
     for box, class_id in zip(results.boxes.data, results.boxes.cls):
         x1, y1, x2, y2, conf, cls = box.cpu().numpy()
@@ -78,7 +95,7 @@ while cap.isOpened():
 
         font_scale = 0.5
         thickness = 1
-        text_color = (200, 200, 200) 
+        text_color = (200, 200, 200)  
         text_bg_color = (50, 50, 50)  
 
         (text_w, text_h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
