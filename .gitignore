@@ -1,6 +1,6 @@
 detectron2/
 segment_anything/
-yolo/runs/   
+yolo/runs/
 
 
 *.pt  
