@@ -16,7 +16,7 @@ if not cap.isOpened():
     exit()
 
 
-original_fps = cap.get(cv2.CAP_PROP_FPS)  
+original_fps = int(cap.get(cv2.CAP_PROP_FPS)) 
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -35,9 +35,9 @@ fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, original_fps, (resize_width, resize_height))
 
 
-frame_skip = 5  
+frame_skip = 1  
 frame_count = 0
-last_processed_frame = None 
+last_processed_frame = None  
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -46,14 +46,14 @@ while cap.isOpened():
 
     frame_count += 1
 
-  
+   
     frame = cv2.resize(frame, (resize_width, resize_height))
 
     if frame_count % frame_skip == 0:
-       
+    
         results = model(frame)[0]
 
-       
+   
         for box in results.boxes.data:
             x1, y1, x2, y2, conf, cls = box.cpu().numpy()
             label = f"{model.names[int(cls)]} {conf:.2f}"
@@ -63,7 +63,7 @@ while cap.isOpened():
             cv2.putText(frame, label, (int(x1), int(y1) - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 4, cv2.LINE_AA) 
             cv2.putText(frame, label, (int(x1), int(y1) - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2, cv2.LINE_AA) 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2, cv2.LINE_AA)  
 
         last_processed_frame = frame.copy()  
 
@@ -71,6 +71,7 @@ while cap.isOpened():
         if last_processed_frame is not None:
             frame = last_processed_frame.copy()  
 
+    
     out.write(frame)
     cv2.imshow("YOLOv8 Object Detection", frame)
 
