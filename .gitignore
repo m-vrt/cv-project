@@ -1,6 +1,19 @@
 detectron2/
 segment_anything/
+yolo/runs/   
+
+
+*.pt  
+*.pth  
+*.onnx  
+
 
 *.MOV
 *.mp4
 *.avi
+*.mkv
+
+
+__pycache__/
+*.log
+*.tmp
