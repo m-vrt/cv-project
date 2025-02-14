@@ -63,4 +63,4 @@ Ensure that your input video is named `for cv-project.mp4` and placed in the sam
 
 ## GitHub Repository  
 
-The GitHub repository for this project can be found at `[m-vrt/cv-project](https://github.com/m-vrt/cv-project)`.
+The GitHub repository for this project can be found at [`m-vrt/cv-project`](https://github.com/m-vrt/cv-project).
