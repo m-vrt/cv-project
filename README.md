@@ -57,7 +57,6 @@ This repository **already includes** the required input video and pre-generated 
 - **Pre-generated Output Videos:**  
   - `output_yolo_seg.mp4` (YOLOv8-Seg)  
   - `output_faster_rcnn.mp4` (Faster R-CNN)  
-  - `output_retinanet.mp4` (RetinaNet)  
   - `output_sam.mp4` (Segment Anything Model)  
 
 ### **Customizing Start Time & Output Name**  
