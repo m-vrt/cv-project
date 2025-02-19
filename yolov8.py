@@ -5,10 +5,8 @@ import numpy as np
 import random
 from ultralytics import YOLO
 
-
 model_path = "yolov8n-seg.pt"
 model = YOLO(model_path)
-
 
 video_path = "for cv-project.mp4"
 cap = cv2.VideoCapture(video_path)
@@ -16,7 +14,6 @@ cap = cv2.VideoCapture(video_path)
 if not cap.isOpened():
     print("Error: Could not open video.")
     exit()
-
 
 original_fps = int(cap.get(cv2.CAP_PROP_FPS))
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -35,29 +32,21 @@ out = cv2.VideoWriter(output_path, fourcc, original_fps, (output_width, output_h
 CLASS_COLORS = {}
 
 def get_color(class_id):
-    """ Assigns muted, professional colors dynamically for each object class. """
     if class_id not in CLASS_COLORS:
-        muted_palette = [
-            (60, 180, 100),  
-            (90, 140, 200), 
-            (180, 80, 80),   
-            (190, 160, 90),  
-            (140, 140, 140)  
+        bright_palette = [
+            (0, 255, 0),    
+            (0, 0, 255),    
+            (255, 0, 0),   
+            (255, 255, 0), 
+            (255, 0, 255)  
         ]
-        CLASS_COLORS[class_id] = muted_palette[class_id % len(muted_palette)]
+        CLASS_COLORS[class_id] = bright_palette[class_id % len(bright_palette)]
     return CLASS_COLORS[class_id]
 
-
-start_time_seconds = 60 
-frame_start = start_time_seconds * original_fps  
-
+start_time_seconds = 60
+frame_start = start_time_seconds * original_fps
 
 cap.set(cv2.CAP_PROP_POS_FRAMES, frame_start)
-
-
-alpha_running = 1.0
-beta_running = 0.0
-alpha_smoothing = 0.05  
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -66,19 +55,13 @@ while cap.isOpened():
 
     frame = cv2.resize(frame, (output_width, output_height))
 
-    
-    avg_brightness = np.mean(frame)
-    target_brightness = 88.22  
-
-    beta_new = target_brightness - avg_brightness
-    beta_running = (1 - alpha_smoothing) * beta_running + alpha_smoothing * beta_new
-
-  
-    frame = cv2.convertScaleAbs(frame, alpha=1.1, beta=beta_running)
-
     results = model(frame)[0]
 
+    
     if results.masks:
+        num_masks = len(results.masks.data)
+        print(f"Segmentation detected in frame {frame_start}: {num_masks} masks found.")
+
         blended_frame = frame.copy()
         for mask, class_id in zip(results.masks.data, results.boxes.cls):
             mask = mask.cpu().numpy()
@@ -90,11 +73,17 @@ while cap.isOpened():
             for c in range(3):
                 colored_mask[:, :, c] = (mask * color[c]).astype(np.uint8)
 
+            colored_mask = cv2.GaussianBlur(colored_mask, (3, 3), 1)
             
-            colored_mask = cv2.GaussianBlur(colored_mask, (7, 7), 3)
+            frame = cv2.addWeighted(frame, 0.98, colored_mask, 0.02, 0)
 
-            
-            frame = cv2.addWeighted(frame, 0.93, colored_mask, 0.07, 0)  
+          
+            mask_binary = (mask * 255).astype(np.uint8)
+            contours, _ = cv2.findContours(mask_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(frame, contours, -1, (255, 255, 255), 2) 
+
+    else:
+        print(f"No segmentation detected in frame {frame_start}.")
 
     for box, class_id in zip(results.boxes.data, results.boxes.cls):
         x1, y1, x2, y2, conf, cls = box.cpu().numpy()
@@ -105,8 +94,8 @@ while cap.isOpened():
 
         font_scale = 0.5
         thickness = 1
-        text_color = (200, 200, 200) 
-        text_bg_color = (50, 50, 50)  
+        text_color = (200, 200, 200)
+        text_bg_color = (50, 50, 50)
 
         (text_w, text_h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
         cv2.rectangle(frame, (int(x1), int(y1) - text_h - 5), (int(x1) + text_w + 5, int(y1)), text_bg_color, -1)
