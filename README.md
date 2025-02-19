@@ -50,16 +50,20 @@ This project was developed using **Visual Studio Code (VS Code)**.
 
 ## Usage  
 
-Run the following command to process your video and generate an output:
-```bash
-python yolov8.py
-```
-Ensure that your input video is named `for cv-project.mp4` and placed in the same folder as the script. The processed output will be saved as `output_yolo_seg.mp4` in the same directory.
+### **Using the Provided Video Files**  
+This repository **already includes** the required input video and pre-generated outputs for different models, so you don’t need to provide your own video.  
 
-### Customizing Start Time & Output Name
-- This script starts processing from **1:00 minute** by default.  
-- Modify `start_time_seconds = 60` in `yolov8.py` to start at a different time.
-- Change `output_path = "output_yolo_seg.mp4"` if you want a different output filename.
+- **Input Video:** `for cv-project.mp4`  
+- **Pre-generated Output Videos:**  
+  - `output_yolo_seg.mp4` (YOLOv8-Seg)  
+  - `output_faster_rcnn.mp4` (Faster R-CNN)  
+  - `output_retinanet.mp4` (RetinaNet)  
+  - `output_sam.mp4` (Segment Anything Model)  
+
+### **Customizing Start Time & Output Name**  
+- The **YOLOv8-Seg output (`output_yolo_seg.mp4`) starts processing from 1:00 minute by default.**  
+- Modify `start_time_seconds = 60` in `yolov8.py` to change the starting point.  
+- Change `output_path = "output_yolo_seg.mp4"` if you want a different output filename.  
 
 ## GitHub Repository  
 
