@@ -9,6 +9,7 @@ yolo/runs/
 
 
 *.MOV
+*.mp4
 *.avi
 *.mkv
 
