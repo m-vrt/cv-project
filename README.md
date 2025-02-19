@@ -59,7 +59,7 @@ This project was developed using **Visual Studio Code (VS Code)**.
 ## Usage  
 
 ### **Using the Provided Video Files**  
-This repository **already includes** the required input video and pre-generated outputs for different models, so you don’t need to provide your own video.  
+This repository **already includes** the required input video and pre-generated outputs for different models.
 
 - **Input Video:** `for cv-project.mp4`  
 - **Pre-generated Output Videos:**  
