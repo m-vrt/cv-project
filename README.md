@@ -8,7 +8,7 @@ The project applies **real-time object detection and segmentation** techniques t
 
 After evaluating multiple **SoA object detection and segmentation models**, **YOLOv8-Seg was ultimately chosen as the final system** due to its **real-time performance and segmentation accuracy**.  
 
-The **final output video (`output_yolo_seg.mp4`)** presents the results of **YOLOv8-Seg**, seamlessly blending segmentation into the scene while ensuring objects are clearly identified without obstructing the original environment. To enhance clarity, **white contour outlines highlight the segmented areas**, making the segmentation effect distinct even in complex settings. This approach ensures segmentation is **visually clear while preserving the readability of the video**.  
+The **final output video is available via the link in the Project Report**. The results of **YOLOv8-Seg** seamlessly blend segmentation into the scene while ensuring objects are clearly identified without obstructing the original environment. To enhance clarity, **white contour outlines highlight the segmented areas**, making the segmentation effect distinct even in complex settings. This approach ensures segmentation is **visually clear while preserving the readability of the video**.  
 
 ## Installation  
 
@@ -46,7 +46,7 @@ pip install -r requirements.txt
 
 ## Development Environment  
 
-This project was developed using **Visual Studio Code (VS Code)**.
+This project was developed using **Visual Studio Code (VS Code)**.  
 
 ## Requirements  
 
@@ -58,19 +58,10 @@ This project was developed using **Visual Studio Code (VS Code)**.
 
 ## Usage  
 
-### **Using the Provided Video Files**  
-This repository **already includes** the required input video and pre-generated outputs for different models.
-
-- **Input Video:** `for cv-project.mp4`  
-- **Pre-generated Output Videos:**  
-  - `output_yolo_seg.mp4` (YOLOv8-Seg)  
-  - `output_faster_rcnn.mp4` (Faster R-CNN)  
-  - `output_sam.mp4` (Segment Anything Model)  
-
-### **Customizing Start Time & Output Name**  
-- The **YOLOv8-Seg output (`output_yolo_seg.mp4`) starts processing from 1:00 minute by default.**  
+### **Processing Video Using YOLOv8-Seg**  
+- The **YOLOv8-Seg output starts processing from 1:00 minute by default**.  
 - Modify `start_time_seconds = 60` in `yolov8.py` to change the starting point.  
-- Change `output_path = "output_yolo_seg.mp4"` if you want a different output filename.  
+- Change `output_path` to define a custom output filename.  
 
 ## GitHub Repository  
 
