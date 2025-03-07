@@ -3,6 +3,13 @@ segment_anything/
 yolo/runs/
 
 
+cv-project/cv-project/
+extracted_frames/
+ground_truth/
+kitti/
+predictions/
+
+
 *.pt  
 *.pth  
 *.onnx  
@@ -17,3 +24,4 @@ yolo/runs/
 __pycache__/
 *.log
 *.tmp
+
