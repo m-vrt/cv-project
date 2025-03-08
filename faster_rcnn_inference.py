@@ -6,63 +6,69 @@ import xml.etree.ElementTree as ET
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 from detectron2 import model_zoo
-from detectron2.data import MetadataCatalog
 
 
 cfg = get_cfg()
 cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.4  
-cfg.MODEL.DEVICE = "cuda"  
+
+
+if torch.cuda.is_available():
+    free_memory = torch.cuda.memory_reserved(0) - torch.cuda.memory_allocated(0)
+    if free_memory < 500 * 1024 * 1024:  
+        print("Warning: Low GPU memory. Switching to CPU mode.")
+        cfg.MODEL.DEVICE = "cpu"
+    else:
+        cfg.MODEL.DEVICE = "cuda"
+else:
+    cfg.MODEL.DEVICE = "cpu"
 
 predictor = DefaultPredictor(cfg)
 
 
-video_path = "C:/Users/Donna/Documents/m-vrt/cv-project/output_faster_rcnn_trimmed.mp4" 
+kitti_images_folder = "C:/Users/Donna/Documents/m-vrt/cv-project/kitti/image_2/testing/image_2"
 predictions_folder = "C:/Users/Donna/Documents/m-vrt/cv-project/predictions/faster_rcnn"
 os.makedirs(predictions_folder, exist_ok=True)
 
 
-cap = cv2.VideoCapture(video_path)
-if not cap.isOpened():
-    print("Error: Could not open video.")
-    exit()
+MAX_IMAGES = 300
+image_files = sorted(os.listdir(kitti_images_folder))[:MAX_IMAGES]  
 
-frame_count = 0
+for image_filename in image_files:
+    if image_filename.endswith(".png"):
+        image_path = os.path.join(kitti_images_folder, image_filename)
+        image = cv2.imread(image_path)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+        
+        outputs = predictor(image)
+        instances = outputs["instances"].to("cpu")
 
-    frame_count += 1
-    frame_filename = f"frame_{frame_count:04d}.xml"
-    frame_output_path = os.path.join(predictions_folder, frame_filename)
+        
+        xml_filename = os.path.splitext(image_filename)[0] + ".xml"
+        xml_output_path = os.path.join(predictions_folder, xml_filename)
 
-    
-    outputs = predictor(frame)
-    instances = outputs["instances"].to("cpu")
+        annotation = ET.Element("annotation")
+        ET.SubElement(annotation, "filename").text = image_filename
 
-    
-    annotation = ET.Element("annotation")
-    ET.SubElement(annotation, "filename").text = frame_filename
+        for i in range(len(instances.pred_classes)):
+            obj = ET.SubElement(annotation, "object")
+            class_id = int(instances.pred_classes[i])
+            bbox = instances.pred_boxes.tensor[i].numpy()
 
-    for i in range(len(instances.pred_classes)):
-        obj = ET.SubElement(annotation, "object")
-        class_id = int(instances.pred_classes[i])
-        bbox = instances.pred_boxes.tensor[i].numpy()
+            ET.SubElement(obj, "name").text = str(class_id)
 
-        ET.SubElement(obj, "name").text = str(class_id)
+           
+            bndbox = ET.SubElement(obj, "bndbox")
+            ET.SubElement(bndbox, "xmin").text = str(int(bbox[0]))
+            ET.SubElement(bndbox, "ymin").text = str(int(bbox[1]))
+            ET.SubElement(bndbox, "xmax").text = str(int(bbox[2]))
+            ET.SubElement(bndbox, "ymax").text = str(int(bbox[3]))
+
+        tree = ET.ElementTree(annotation)
+        tree.write(xml_output_path)
 
        
-        bndbox = ET.SubElement(obj, "bndbox")
-        ET.SubElement(bndbox, "xmin").text = str(int(bbox[0]))
-        ET.SubElement(bndbox, "ymin").text = str(int(bbox[1]))
-        ET.SubElement(bndbox, "xmax").text = str(int(bbox[2]))
-        ET.SubElement(bndbox, "ymax").text = str(int(bbox[3]))
+        torch.cuda.empty_cache()
 
-    tree = ET.ElementTree(annotation)
-    tree.write(frame_output_path)
-
-cap.release()
-print(f"Inference complete. Predictions saved in: {predictions_folder}")
+print(f"Inference complete on {MAX_IMAGES} images. Predictions saved in: {predictions_folder}")

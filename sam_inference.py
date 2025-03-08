@@ -10,52 +10,80 @@ from segment_anything import sam_model_registry, SamPredictor
 warnings.filterwarnings("ignore")
 
 
-model_type = "vit_b"
-sam = sam_model_registry[model_type](checkpoint="segment_anything/sam_model.pth")
-sam.to("cuda")
-predictor = SamPredictor(sam)
-
-
-video_path = "C:/Users/Donna/Documents/m-vrt/cv-project/output_sam_trimmed.mp4"  
+kitti_images_folder = "C:/Users/Donna/Documents/m-vrt/cv-project/kitti/image_2/testing/image_2"
 predictions_folder = "C:/Users/Donna/Documents/m-vrt/cv-project/predictions/sam"
 os.makedirs(predictions_folder, exist_ok=True)
 
 
-cap = cv2.VideoCapture(video_path)
-if not cap.isOpened():
-    print("Error: Could not open video.")
+MAX_IMAGES = 256
+image_files = sorted(os.listdir(kitti_images_folder))[:MAX_IMAGES]
+
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"🔄 Loading SAM model on {device}...")
+
+try:
+    model_type = "vit_b"
+    sam = sam_model_registry[model_type](checkpoint="segment_anything/sam_model.pth").to(device)
+    predictor = SamPredictor(sam)
+    print(f"✅ SAM Model loaded successfully on {device}")
+except Exception as e:
+    print(f"❌ Error loading SAM model: {e}")
     exit()
 
-frame_count = 0
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+for i, image_filename in enumerate(image_files):
+    try:
+        if not image_filename.endswith(".png"):
+            continue
 
-    frame_count += 1
-    frame_filename = f"frame_{frame_count:04d}.json"
-    frame_output_path = os.path.join(predictions_folder, frame_filename)
+        image_path = os.path.join(kitti_images_folder, image_filename)
+        print(f"\n🔹 [{i+1}/{MAX_IMAGES}] Processing: {image_filename}")
 
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    predictor.set_image(frame_rgb)
+       
+        image = cv2.imread(image_path)
+        if image is None:
+            print(f"⚠️ Skipped unreadable image: {image_filename}")
+            continue
 
-   
-    masks, _, _ = predictor.predict(multimask_output=True)
-
-    objects = []
-    for mask in masks:
-        mask = mask.astype(np.uint8) * 255
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            bbox = [x, y, x + w, y + h]
-            objects.append({"class_id": 1, "bbox": bbox})  
+        original_shape = image.shape[:2]
+        resized_image = cv2.resize(image, (640, 480))  
+        print(f"🟢 Resized from {original_shape} to {resized_image.shape[:2]}")
 
-   
-    with open(frame_output_path, "w") as f:
-        json.dump({"frame": frame_filename, "objects": objects}, f, indent=4)
+        
+        frame_rgb = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
+        predictor.set_image(frame_rgb)
 
-cap.release()
-print(f"Inference complete. Predictions saved in: {predictions_folder}")
+        
+        masks, _, _ = predictor.predict(multimask_output=False)  
+        print(f"✅ {len(masks)} mask(s) detected.")
+
+        objects = []
+        for mask in masks:
+            mask_uint8 = (mask * 255).astype(np.uint8)
+            contours, _ = cv2.findContours(mask_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            for contour in contours:
+                x, y, w, h = cv2.boundingRect(contour)
+                bbox = [x, y, x + w, y + h]
+                objects.append({"class_id": 1, "bbox": bbox})
+
+       
+        json_filename = os.path.splitext(image_filename)[0] + ".json"
+        json_output_path = os.path.join(predictions_folder, json_filename)
+
+        with open(json_output_path, "w") as f:
+            json.dump({"frame": json_filename, "objects": objects}, f, indent=4)
+
+        print(f"✅ JSON saved: {json_filename}")
+
+        
+        del frame_rgb, resized_image, masks
+        torch.cuda.empty_cache() 
+
+    except Exception as e:
+        print(f"❌ Error processing {image_filename}: {e}")
+        continue  
+
+print(f"\n✅ SAM inference completed on {MAX_IMAGES} images. Predictions saved to {predictions_folder}")
