@@ -19,7 +19,7 @@ fps_values = {
 IOU_THRESHOLDS = np.arange(0.5, 1.0, 0.05)  
 
 CONFIDENCE_THRESHOLD = 0.10  
-IOU_MATCH_THRESHOLD = 0.5  
+IOU_MATCH_THRESHOLD = 0.45  
 
 
 def normalize_to_absolute(box, img_width=1280, img_height=720):
