@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import auc
 from glob import glob
 
 
@@ -16,10 +16,9 @@ fps_values = {
 }
 
 
-IOU_THRESHOLDS = [0.5]  
+IOU_THRESHOLDS = np.arange(0.5, 1.0, 0.05)  
 
-
-CONFIDENCE_THRESHOLD = 0.15  
+CONFIDENCE_THRESHOLD = 0.10  
 IOU_MATCH_THRESHOLD = 0.5  
 
 
@@ -108,12 +107,22 @@ for gt_file in glob(os.path.join(ground_truth_folder, "*.txt")):
     total_fp += fp
     total_fn += fn
 
-   
     aps = []
     for iou_thresh in IOU_THRESHOLDS:
         tp_thresh = sum(1 for i in ious if i >= iou_thresh)
-        ap = tp_thresh / (tp_thresh + fp + fn + 1e-6)
+        fp_thresh = total_fp
+        fn_thresh = total_fn
+        
+        precision_at_iou = tp_thresh / (tp_thresh + fp_thresh + 1e-6)
+        recall_at_iou = tp_thresh / (tp_thresh + fn_thresh + 1e-6)
+        
+        recall_points = np.linspace(0, 1, 11)
+        precision_interpolated = [precision_at_iou for _ in recall_points]
+        
+        ap = auc(recall_points, precision_interpolated)
         aps.append(ap)
+    aps = np.maximum.accumulate(sorted(aps, reverse=True))  
+    
     mAP_values.append(np.mean(aps))
 
 
