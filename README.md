@@ -1,14 +1,14 @@
 # Recognizing Objects in Video Sequences Using Computer Vision  
 
-This repository explores **state-of-the-art (SoA) object detection and segmentation models**, including **YOLOv8, Faster R-CNN, and Mask R-CNN**, utilizing **OpenCV, PyTorch, and NumPy in Python**. It supplements the **Project Report**, which serves as the final requirement for the course **Project: Computer Vision**.  
+This repository explores **state-of-the-art (SoA) object detection and segmentation models**, i.e., **YOLOv8-Seg**, **Faster R-CNN**, and **Mask R-CNN**, using OpenCV, PyTorch, and NumPy in Python. It supplements the **Project Report**, which serves as the final requirement for the course **Project: Computer Vision**.  
 
 ## **Project Overview**  
 
-The project applies **real-time object detection and segmentation** techniques to analyze urban environments. The footage was taken aboard a **double-decker bus in Hong Kong**, capturing busy streets with **cars, buses, and pedestrians**. Objects are detected, tracked, and segmented dynamically, with **bounding boxes and segmentation masks applied** to highlight different objects throughout the video.  
+The project applies **real-time object detection** and **segmentation** techniques to analyze urban environments. The footage was taken aboard a double-decker bus in Hong Kong, capturing busy streets with cars, buses, and pedestrians. Objects are detected, tracked, and segmented dynamically, with **bounding boxes** and **segmentation masks** applied to highlight different objects throughout the video.  
 
-After evaluating multiple **SoA object detection and segmentation models**, **YOLOv8-Seg was ultimately chosen as the final system** due to its **real-time performance and segmentation accuracy**.  
+After evaluating multiple **SoA object detection and segmentation models**, **YOLOv8-Seg** was ultimately chosen as the final system due to its real-time performance and segmentation accuracy.  
 
-The **final output video is available via the link in the Project Report**. The results of **YOLOv8-Seg** seamlessly blend segmentation into the scene while ensuring objects are clearly identified without obstructing the original environment. To enhance clarity, **white contour outlines highlight the segmented areas**, making the segmentation effect distinct even in complex settings. This approach ensures segmentation is **visually clear while preserving the readability of the video**.  
+The **final output video** is available via the link in the Project Report. The results of **YOLOv8-Seg** seamlessly blend segmentation into the scene while ensuring objects are clearly identified without obstructing the original environment. To enhance clarity, white contour outlines highlight the segmented areas, making the segmentation effect distinct even in complex settings. This approach ensures segmentation is visually clear while preserving the readability of the video.  
 
 ## Installation  
 
